@@ -48,7 +48,11 @@ public class CircuitBreakerManagerDefault implements CircuitBreakerManager {
             Result returnValue = null;
             /* 进入了熔断状态*/
             if (breaker.isOpen()) {
-                throw new RpcException("short-circuited is opened!" + key);
+                if (!isForbidInvoker(key)) {
+                    throw new RpcException("short-circuited is half-opened, try again!" + key);
+                } else {
+                    throw new RpcException("short-circuited is opened!" + key);
+                }
             } else if (breaker.isClosed()) {
                 try {
                     returnValue = invoker.invoke(invocation);
